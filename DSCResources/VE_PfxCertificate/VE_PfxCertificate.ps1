@@ -7,7 +7,8 @@ function Get-TargetResource {
         [Parameter(Mandatory)] [ValidateSet('LocalMachine','CurrentUser')] [System.String] $Location,
         [Parameter(Mandatory)] [ValidateSet('AddressBook','AuthRoot','CertificateAuthority','Disallowed','My','Root','TrustedPeople','TrustedPublisher')] [System.String] $Store,
         [Parameter(Mandatory)] [System.Management.Automation.PSCredential] $Credential,
-        [Parameter()] [ValidateSet('Present','Absent')] [System.String] $Ensure = 'Present'
+        [Parameter()] [ValidateSet('Present','Absent')] [System.String] $Ensure = 'Present',
+        [Parameter()] [System.Boolean] $Exportable
     )
     process {
         $certificatePath = 'Cert:\{0}\{1}' -f $Location, $Store;
@@ -19,6 +20,7 @@ function Get-TargetResource {
             Store = $Store;
             Credential = $Credential;
             Ensure = 'Absent';
+            Exportable = $Exportable;
         }
         if ($isCertificatePresent) {
             $targetResource['Ensure'] = 'Present';
@@ -36,7 +38,8 @@ function Test-TargetResource {
         [Parameter(Mandatory)] [ValidateSet('LocalMachine','CurrentUser')] [System.String] $Location,
         [Parameter(Mandatory)] [ValidateSet('AddressBook','AuthRoot','CertificateAuthority','Disallowed','My','Root','TrustedPeople','TrustedPublisher')] [System.String] $Store,
         [Parameter(Mandatory)] [System.Management.Automation.PSCredential] $Credential,
-        [Parameter()] [ValidateSet('Present','Absent')] [System.String] $Ensure = 'Present'
+        [Parameter()] [ValidateSet('Present','Absent')] [System.String] $Ensure = 'Present',
+        [Parameter()] [System.Boolean] $Exportable
     )
     process {
         $targetResource = Get-TargetResource @PSBoundParameters;
@@ -52,7 +55,8 @@ function Set-TargetResource {
         [Parameter(Mandatory)] [ValidateSet('LocalMachine','CurrentUser')] [System.String] $Location,
         [Parameter(Mandatory)] [ValidateSet('AddressBook','AuthRoot','CertificateAuthority','Disallowed','My','Root','TrustedPeople','TrustedPublisher')] [System.String] $Store,
         [Parameter(Mandatory)] [System.Management.Automation.PSCredential] $Credential,
-        [Parameter()] [ValidateSet('Present','Absent')] [System.String] $Ensure = 'Present'
+        [Parameter()] [ValidateSet('Present','Absent')] [System.String] $Ensure = 'Present',
+        [Parameter()] [System.Boolean] $Exportable
     )
     process {
         $certificatePath = 'Cert:\{0}\{1}' -f $Location, $Store;
@@ -66,6 +70,9 @@ function Set-TargetResource {
             }
             elseif ($Location -eq 'CurrentUser') {
                 $flags = [Security.Cryptography.X509Certificates.X509KeyStorageFlags]::UserKeySet;
+            }
+            if ($Exportable) {
+                $flags = $flags -bor [Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable;
             }
             $certificateStore = New-Object -TypeName 'Security.Cryptography.X509Certificates.X509Store' -ArgumentList $Store, $Location;
             $certificateStore.Open(([Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite));

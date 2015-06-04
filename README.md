@@ -2,7 +2,7 @@ Included DSC Resources
 ======================
 * cPfxCertificate
 
-These custom Desired State Configuration (DSC) resources utilise .NET x509 certificate objects to
+This custom Desired State Configuration (DSC) resource utilise .NET x509 certificate objects to
 install Personal Information Exchange (PFX) certificate bundles.
 
 cPfxCertificate
@@ -17,6 +17,7 @@ cPfxCertificate [string]
     Path = [string]
     Credential = [PSCredential] { Password }
     Ensure = [string] { Present | Absent }
+    Exportable = [bool]
 }
 ```
 ###Properties
@@ -25,10 +26,11 @@ cPfxCertificate [string]
 * Store: Destination certificate store name. Use 'My' for the 'Personal' store.
 * Path: Source file system path to the .pfx certificate bundle.
 * Credential: PSCredential object containing the certificate password.
+* Exportable: Mark private key as exportable.
 
 ###Configuration
 ```
-Configuration cPfxCertificate {
+Configuration Example_cPfxCertificate {
     Import-DscResource -ModuleName cPfxCertificate
     cPfxCertificate MyCertificate {
         Thumbprint = 'A4D8B8E3B1B6910CB54C3B6CDFD6478914327850'
@@ -36,6 +38,7 @@ Configuration cPfxCertificate {
         Store = 'My'
         Path = 'C:\Resources\MyCertificate.pfx'
         Credential = (Get-Credential MyCertificateCredentials)
+        Exportable = $true
     }
 }
 ```
